@@ -3,252 +3,293 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClinSumm — AI Clinical Note Summarizer</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>VenueIQ — AI Event Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #05080f;
-  --bg2: #0a0f1a;
-  --bg3: #0f1525;
-  --border: rgba(56, 189, 248, 0.1);
-  --border2: rgba(56, 189, 248, 0.2);
-  --cyan: #38bdf8;
-  --cyan-glow: rgba(56, 189, 248, 0.12);
-  --green: #34d399;
-  --green-glow: rgba(52, 211, 153, 0.12);
-  --text: #94a3b8;
-  --text2: #cbd5e1;
-  --white: #f1f5f9;
-  --red: #f87171;
-  --amber: #fbbf24;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; min-height: 100vh; overflow-x: hidden; }
-.grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px); background-size: 48px 48px; animation: gridShift 20s linear infinite; pointer-events: none; z-index: 0; }
-@keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 48px 48px; } }
-.glow1 { position: fixed; width: 500px; height: 500px; top: -150px; left: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 70%); pointer-events: none; z-index: 0; border-radius: 50%; }
-.glow2 { position: fixed; width: 300px; height: 300px; bottom: 10%; right: 5%; background: radial-gradient(circle, rgba(52,211,153,0.04) 0%, transparent 70%); pointer-events: none; z-index: 0; border-radius: 50%; }
-.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
-header { margin-bottom: 48px; animation: slideDown 0.5s ease both; }
-.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 32px; height: 32px; border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--cyan-glow); }
-.cross { position: relative; width: 14px; height: 14px; }
-.cross::before, .cross::after { content: ''; position: absolute; background: var(--cyan); border-radius: 1px; }
-.cross::before { width: 14px; height: 3px; top: 50%; left: 0; transform: translateY(-50%); }
-.cross::after { width: 3px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
-.logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
-.logo-name span { color: var(--cyan); }
-.status-pill { display: flex; align-items: center; gap: 6px; background: var(--green-glow); border: 1px solid rgba(52,211,153,0.2); border-radius: 20px; padding: 5px 12px; font-size: 11px; color: var(--green); letter-spacing: 0.08em; }
-.sdot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.hero { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; }
-h1 { font-family: 'Syne', sans-serif; font-size: clamp(40px, 6vw, 64px); font-weight: 800; color: var(--white); line-height: 1.0; letter-spacing: -0.03em; margin-bottom: 12px; }
-.ac { color: var(--cyan); }
-.dm { color: var(--text); font-weight: 400; }
-.hero p { font-size: 12px; color: var(--text); line-height: 1.6; max-width: 440px; }
-.stats { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; text-align: right; }
-.sn { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--cyan); display: block; }
-.sl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); }
-.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; animation: slideUp 0.5s ease 0.1s both; }
-.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
-.panel:focus-within { border-color: var(--border2); }
-.ph { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); }
-.pt { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text); display: flex; align-items: center; gap: 6px; }
-.pt::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
-.pt.on::before { background: var(--cyan); }
-.wc { font-size: 10px; color: var(--text); opacity: 0.5; }
-textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text2); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.75; padding: 18px; resize: none; height: 280px; display: block; }
-textarea::placeholder { color: rgba(148,163,184,0.3); }
-.pf { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.shortcut { font-size: 10px; color: var(--text); opacity: 0.4; }
-.shortcut kbd { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: inherit; font-size: 9px; }
-.btn { background: var(--cyan); color: #000; border: none; border-radius: 7px; padding: 9px 20px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-.btn:hover:not(:disabled) { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(56,189,248,0.25); }
-.btn:active { transform: translateY(0); }
-.btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
-.spinner { width: 12px; height: 12px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin 0.5s linear infinite; display: none; }
-.btn.loading .spinner { display: block; }
-.btn.loading .bl, .btn.loading .ba { display: none; }
-.out-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; grid-column: 1 / -1; display: none; animation: slideUp 0.4s ease both; }
-.out-panel.show { display: block; }
-.out-body { padding: 20px; }
-.raw { font-size: 12px; line-height: 1.8; color: var(--text2); white-space: pre-wrap; }
-.cursor { display: inline-block; width: 2px; height: 14px; background: var(--cyan); margin-left: 2px; vertical-align: middle; animation: blink 0.8s infinite; }
-.err { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15); border-radius: 8px; padding: 14px 16px; font-size: 12px; color: var(--red); margin-top: 12px; display: none; }
-.err.show { display: block; }
-.samples { margin-top: 16px; animation: slideUp 0.5s ease 0.2s both; }
-.sh { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 8px; }
-.sbtns { display: flex; gap: 8px; flex-wrap: wrap; }
-.sbtn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text); cursor: pointer; transition: all 0.15s; }
-.sbtn:hover { border-color: var(--border2); color: var(--cyan); }
-footer { margin-top: 48px; display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--border); animation: slideUp 0.5s ease 0.3s both; }
-.fl { font-size: 10px; color: var(--text); opacity: 0.4; }
-.fr { display: flex; gap: 16px; }
-.tp { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); opacity: 0.3; }
-.tbar { height: 2px; background: var(--border); margin: 0 16px; }
-.tfill { height: 100%; background: var(--cyan); border-radius: 1px; transition: width 0.3s; width: 0%; }
-.step { display: flex; gap: 12px; align-items: flex-start; }
-.stepn { width: 24px; height: 24px; border-radius: 6px; background: var(--cyan-glow); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); font-family: 'Syne', sans-serif; font-weight: 700; flex-shrink: 0; }
-.stept { font-size: 12px; color: var(--text2); margin-bottom: 4px; font-family: 'Syne', sans-serif; font-weight: 600; }
-.steps { font-size: 11px; color: var(--text); line-height: 1.6; }
-.disc { margin-top: 8px; padding: 12px; background: var(--bg3); border-radius: 8px; border: 1px solid var(--border); }
-.discl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; opacity: 0.8; }
-.disct { font-size: 10px; color: var(--text); line-height: 1.6; }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (max-width: 700px) { .main-grid { grid-template-columns: 1fr; } .hero { grid-template-columns: 1fr; } .stats { display: none; } }
+:root{--void:#000508;--deep:#010c18;--panel:#020f1e;--card:#031425;--b1:rgba(0,210,255,0.12);--b2:rgba(0,210,255,0.28);--b3:rgba(0,210,255,0.5);--c:#00d2ff;--c2:#7ef5ff;--c3:rgba(0,210,255,0.06);--amber:#ffb700;--red:#ff3a3a;--green:#00ff88;--t:#7ab3cc;--t2:#a8d4e6;--w:#e8f4f8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--void);color:var(--t);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
+.gbg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,210,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,210,255,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+.gtl{position:fixed;top:0;left:0;width:600px;height:600px;background:radial-gradient(ellipse at top left,rgba(0,210,255,0.06) 0%,transparent 60%);pointer-events:none;z-index:0;border-radius:50%}
+.gbr{position:fixed;bottom:0;right:0;width:400px;height:400px;background:radial-gradient(ellipse at bottom right,rgba(255,183,0,0.04) 0%,transparent 60%);pointer-events:none;z-index:0;border-radius:50%}
+.rw{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:900px;pointer-events:none;z-index:0;opacity:0.04}
+.rr{position:absolute;border-radius:50%;border:1px solid var(--c);top:50%;left:50%;transform:translate(-50%,-50%)}
+.rr:nth-child(1){width:200px;height:200px}
+.rr:nth-child(2){width:400px;height:400px}
+.rr:nth-child(3){width:600px;height:600px}
+.rr:nth-child(4){width:800px;height:800px}
+.rs{position:absolute;top:50%;left:50%;width:400px;height:1px;transform-origin:left center;background:linear-gradient(90deg,rgba(0,210,255,0.8),transparent);animation:sweep 4s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 24px 80px}
+/* HEADER */
+.hdr{border:1px solid var(--b2);border-bottom:2px solid var(--c);background:linear-gradient(180deg,rgba(0,210,255,0.04) 0%,transparent 100%);padding:16px 24px;margin-bottom:20px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;animation:fi 0.4s ease both;position:relative}
+.hdr::before,.hdr::after{content:'';position:absolute;width:12px;height:12px;border-color:var(--c);border-style:solid}
+.hdr::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.hdr::after{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.brand{display:flex;align-items:center;gap:14px}
+.bico{width:44px;height:44px;border:1px solid var(--b3);position:relative;display:flex;align-items:center;justify-content:center;background:var(--c3)}
+.bico::before,.bico::after{content:'';position:absolute;background:var(--c)}
+.bico::before{width:20px;height:2px}
+.bico::after{width:2px;height:20px}
+.bdot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--c);animation:pd 1.5s ease-in-out infinite}
+@keyframes pd{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:0.4}}
+.bname{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--w);letter-spacing:.1em;line-height:1}
+.bname span{color:var(--c)}
+.bsub{font-size:9px;letter-spacing:.22em;color:var(--t);text-transform:uppercase;margin-top:3px}
+.tick{overflow:hidden;border:1px solid var(--b1);padding:6px 12px;background:rgba(0,0,0,0.3)}
+.tickr{display:flex;gap:40px;white-space:nowrap;animation:ts 20s linear infinite;font-size:11px;color:var(--t)}
+.tickr span{color:var(--c);margin-right:4px}
+@keyframes ts{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.hr{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.ss{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--green);letter-spacing:.1em}
+.sd{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:sb 2s ease infinite}
+@keyframes sb{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:0.5;box-shadow:none}}
+.clk{font-family:'Orbitron',monospace;font-size:13px;color:var(--c2);letter-spacing:.1em}
+/* METRICS */
+.mets{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;animation:fi 0.4s ease 0.05s both}
+.met{border:1px solid var(--b1);background:var(--panel);padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
+.met::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.5}
+.met:hover{border-color:var(--b2)}
+.ml{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--t);margin-bottom:8px}
+.mv{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;color:var(--c);line-height:1;margin-bottom:4px}
+.mv.am{color:var(--amber)}
+.mv.re{color:var(--red)}
+.mv.gr{color:var(--green)}
+.ms{font-size:9px;color:var(--t);opacity:.6}
+/* MAIN */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;animation:fi 0.4s ease 0.1s both}
+.pnl{border:1px solid var(--b1);background:var(--panel);position:relative}
+.pnl::before,.pnl::after{content:'';position:absolute;width:8px;height:8px;border-color:var(--c);border-style:solid;opacity:.5}
+.pnl::before{bottom:-1px;left:-1px;border-width:0 0 1px 1px}
+.pnl::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+.pb{padding:10px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,210,255,0.02)}
+.pid{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--c);display:flex;align-items:center;gap:8px}
+.pid::before{content:'';display:inline-block;width:4px;height:4px;background:var(--c);box-shadow:0 0 6px var(--c)}
+.ptag{font-size:9px;color:var(--t);opacity:.5;letter-spacing:.1em}
+.mr{display:flex;gap:0;border-bottom:1px solid var(--b1)}
+.mb{flex:1;padding:10px 8px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:transparent;border:none;border-right:1px solid var(--b1);color:var(--t);cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.mb:last-child{border-right:none}
+.mb::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--c);transform:scaleX(0);transition:transform .15s}
+.mb.on{color:var(--c);background:var(--c3)}
+.mb.on::after{transform:scaleX(1)}
+.mb:hover:not(.on){color:var(--t2);background:rgba(0,210,255,0.02)}
+textarea{width:100%;background:transparent;border:none;outline:none;color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.8;padding:16px;resize:none;height:240px;display:block;caret-color:var(--c)}
+textarea::placeholder{color:rgba(122,179,204,0.25)}
+.if{padding:12px 16px;border-top:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.ci{font-size:10px;color:var(--t);opacity:.4}
+.btn{background:transparent;border:1px solid var(--c);color:var(--c);padding:9px 24px;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;display:flex;align-items:center;gap:8px}
+.btn::before{content:'';position:absolute;inset:0;background:var(--c);transform:translateX(-101%);transition:transform .15s;z-index:0}
+.btn span,.btn .sp{position:relative;z-index:1}
+.btn:hover:not(:disabled){color:#000}
+.btn:hover:not(:disabled)::before{transform:translateX(0)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.sp{width:10px;height:10px;border:1.5px solid rgba(0,210,255,0.3);border-top-color:var(--c);border-radius:50%;animation:spin .5s linear infinite;display:none}
+.btn.ld .sp{display:block}
+.btn.ld .bl{display:none}
+/* INFO */
+.ig{padding:16px;display:flex;flex-direction:column;gap:12px;height:240px;overflow-y:auto}
+.ir{display:flex;gap:12px;align-items:flex-start}
+.in{font-family:'Orbitron',monospace;font-size:11px;color:var(--c);opacity:.6;flex-shrink:0;margin-top:2px}
+.it{font-size:11px;color:var(--w);margin-bottom:3px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.id{font-size:11px;color:var(--t);line-height:1.6}
+.wb{border:1px solid rgba(255,183,0,0.2);background:rgba(255,183,0,0.08);padding:10px 12px}
+.wl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:4px}
+.wt{font-size:10px;color:var(--t);line-height:1.6}
+/* OUTPUT */
+.op{border:1px solid var(--b1);background:var(--panel);display:none;animation:fi .3s ease both;position:relative;margin-bottom:16px}
+.op.show{display:block}
+.op::before,.op::after{content:'';position:absolute;width:8px;height:8px;border-color:var(--c);border-style:solid;opacity:.5}
+.op::before{bottom:-1px;left:-1px;border-width:0 0 1px 1px}
+.op::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+.ob{padding:10px 16px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,255,136,0.02)}
+.oid{font-size:9px;letter-spacing:.18em;color:var(--green);display:flex;align-items:center;gap:8px}
+.oid::before{content:'';display:inline-block;width:4px;height:4px;background:var(--green);box-shadow:0 0 6px var(--green)}
+.oba{padding:20px}
+.at{font-size:12px;line-height:2;color:var(--t2);white-space:pre-wrap}
+.cur{display:inline-block;width:8px;height:14px;background:var(--c);margin-left:2px;vertical-align:middle;animation:cb .7s step-end infinite}
+@keyframes cb{0%,100%{opacity:1}50%{opacity:0}}
+/* SAMPLES */
+.ss{border:1px solid var(--b1);background:var(--panel);padding:16px;animation:fi .4s ease .15s both}
+.sl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t);opacity:.5;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sl::before{content:'//';color:var(--c);opacity:.6}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.sc{border:1px solid var(--b1);padding:12px;cursor:pointer;transition:all .15s;background:var(--card);position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--c);transition:height .15s}
+.sc:hover{border-color:var(--b2)}
+.sc:hover::before{height:100%}
+.sct{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.stag{font-size:8px;padding:2px 6px;border:1px solid var(--b2);color:var(--c);letter-spacing:.1em}
+.scd{font-size:10px;color:var(--t);line-height:1.5;opacity:.7}
+/* FOOTER */
+.ft{border-top:1px solid var(--b1);padding-top:16px;margin-top:20px;display:flex;align-items:center;justify-content:space-between;animation:fi .4s ease .2s both}
+.fl{font-size:10px;color:var(--t);opacity:.3;letter-spacing:.08em}
+.fr{display:flex;gap:20px}
+.fp{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t);opacity:.25}
+.eb{border:1px solid rgba(255,58,58,0.3);background:rgba(255,58,58,0.08);padding:12px 16px;font-size:11px;color:var(--red);margin-top:12px;display:none;letter-spacing:.06em}
+.eb.show{display:block}
+@keyframes fi{0%{opacity:0;transform:translateY(8px)}60%{opacity:.8}100%{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:720px){.mg{grid-template-columns:1fr}.mets{grid-template-columns:repeat(2,1fr)}.tick{display:none}.bname{font-size:16px}}
 </style>
 </head>
 <body>
-<div class="grid-bg"></div>
-<div class="glow1"></div>
-<div class="glow2"></div>
-<div class="container">
-  <header>
-    <div class="top-bar">
-      <div class="logo">
-        <div class="logo-icon"><div class="cross"></div></div>
-        <span class="logo-name">Clin<span>Summ</span></span>
-      </div>
-      <div class="status-pill"><div class="sdot"></div>GEMINI 2.0 FLASH · LIVE</div>
-    </div>
-    <div class="hero">
-      <div>
-        <h1>Clinical notes,<br><span class="ac">summarized</span><br><span class="dm">instantly.</span></h1>
-        <p>Paste any clinical note and get a structured AI summary — chief complaint, findings, assessment &amp; plan — in seconds.</p>
-      </div>
-      <div class="stats">
-        <div class="stat"><span class="sn">2.0</span><span class="sl">Gemini Flash</span></div>
-        <div class="stat"><span class="sn">&lt;3s</span><span class="sl">Avg response</span></div>
-        <div class="stat"><span class="sn">∞</span><span class="sl">Note types</span></div>
-      </div>
-    </div>
-  </header>
+<div class="gbg"></div><div class="gtl"></div><div class="gbr"></div>
+<div class="rw"><div class="rr"></div><div class="rr"></div><div class="rr"></div><div class="rr"></div><div class="rs"></div></div>
 
-  <div class="main-grid">
-    <div class="panel">
-      <div class="ph">
-        <span class="pt on">Clinical note input</span>
-        <span class="wc" id="wc">0 words</span>
-      </div>
-      <textarea id="noteInput" placeholder="Paste your clinical note here...&#10;&#10;Supports: ER triage, SOAP notes, discharge summaries, progress notes, operative reports..." spellcheck="false" oninput="updateCount()"></textarea>
-      <div class="tbar"><div class="tfill" id="tfill"></div></div>
-      <div class="pf">
-        <span class="shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run</span>
-        <button class="btn" id="submitBtn" onclick="summarize()">
-          <div class="spinner"></div>
-          <span class="bl">Summarize</span>
-          <span class="ba">→</span>
-        </button>
+<div class="wrap">
+  <div class="hdr">
+    <div class="brand">
+      <div class="bico"><div class="bdot"></div></div>
+      <div><div class="bname">VENUE<span>IQ</span></div><div class="bsub">AI Event Intelligence System · v2.0</div></div>
+    </div>
+    <div class="tick">
+      <div class="tickr">
+        <span>SYS</span>ALL MODULES NOMINAL &nbsp;&nbsp;&nbsp;
+        <span>AI</span>GEMINI 2.0 FLASH CONNECTED &nbsp;&nbsp;&nbsp;
+        <span>CLOUD</span>CLOUD RUN ASIA-SOUTH1 ACTIVE &nbsp;&nbsp;&nbsp;
+        <span>EVENT</span>MONITORING 47 VENUE ZONES &nbsp;&nbsp;&nbsp;
+        <span>ALERT</span>REAL-TIME CROWD ANALYSIS ENABLED &nbsp;&nbsp;&nbsp;
+        <span>SYS</span>ALL MODULES NOMINAL &nbsp;&nbsp;&nbsp;
+        <span>AI</span>GEMINI 2.0 FLASH CONNECTED &nbsp;&nbsp;&nbsp;
+        <span>CLOUD</span>CLOUD RUN ASIA-SOUTH1 ACTIVE &nbsp;&nbsp;&nbsp;
+        <span>EVENT</span>MONITORING 47 VENUE ZONES &nbsp;&nbsp;&nbsp;
+        <span>ALERT</span>REAL-TIME CROWD ANALYSIS ENABLED
       </div>
     </div>
-
-    <div class="panel">
-      <div class="ph"><span class="pt">How it works</span></div>
-      <div style="padding:18px;height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
-        <div class="step"><div class="stepn">01</div><div><div class="stept">Paste your note</div><div class="steps">Any format — ER triage, SOAP, discharge summary, progress note, op report.</div></div></div>
-        <div class="step"><div class="stepn">02</div><div><div class="stept">Gemini 2.0 Flash</div><div class="steps">Note sent to Gemini with a structured clinical extraction prompt.</div></div></div>
-        <div class="step"><div class="stepn">03</div><div><div class="stept">Structured output</div><div class="steps">Chief complaint, key findings, assessment, and plan — clearly separated.</div></div></div>
-        <div class="disc"><div class="discl">Disclaimer</div><div class="disct">For demonstration only. Not a substitute for clinical judgment. Do not use with real patient data.</div></div>
-      </div>
-      <div class="tbar"></div>
-      <div class="pf" style="justify-content:flex-end;"><span style="font-size:10px;color:var(--text);opacity:0.4;">Built for #PromptWars · Google for Developers</span></div>
-    </div>
-
-    <div class="out-panel" id="outPanel">
-      <div class="ph">
-        <span class="pt on">AI summary output</span>
-        <span style="font-size:10px;color:var(--green);display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;"></span>COMPLETE</span>
-      </div>
-      <div class="out-body"><div class="raw" id="sumContent"></div></div>
+    <div class="hr">
+      <div class="ss"><div class="sd"></div>SYSTEM ONLINE</div>
+      <div class="clk" id="clk">--:--:--</div>
     </div>
   </div>
 
-  <div class="err" id="errBox"></div>
+  <div class="mets">
+    <div class="met"><div class="ml">Venue Capacity</div><div class="mv">82<span style="font-size:14px">%</span></div><div class="ms">↑ 3% last 15min</div></div>
+    <div class="met"><div class="ml">Active Zones</div><div class="mv am">47</div><div class="ms">12 high-density</div></div>
+    <div class="met"><div class="ml">Avg Wait Time</div><div class="mv re">14<span style="font-size:14px">min</span></div><div class="ms">Gate C critical</div></div>
+    <div class="met"><div class="ml">AI Analyses</div><div class="mv gr" id="ac">0</div><div class="ms">this session</div></div>
+  </div>
 
-  <div class="samples">
-    <div class="sh">Try a sample note</div>
-    <div class="sbtns">
-      <button class="sbtn" onclick="load('cardiac')">Cardiac · Chest pain</button>
-      <button class="sbtn" onclick="load('stroke')">Neurology · Stroke</button>
-      <button class="sbtn" onclick="load('sepsis')">ICU · Sepsis</button>
-      <button class="sbtn" onclick="load('trauma')">Trauma · MVA</button>
+  <div class="mg">
+    <div class="pnl">
+      <div class="pb"><span class="pid">INCIDENT INPUT TERMINAL</span><span class="ptag" id="mt">MODE: CROWD FLOW</span></div>
+      <div class="mr">
+        <button class="mb on" onclick="sm('crowd',this)">CROWD FLOW</button>
+        <button class="mb" onclick="sm('wait',this)">WAIT TIMES</button>
+        <button class="mb" onclick="sm('coord',this)">COORDINATION</button>
+      </div>
+      <textarea id="ri" placeholder="// INPUT FIELD REPORT&#10;// Describe current venue situation...&#10;&#10;Example: Gate C showing heavy congestion, 3,000 fans backing up toward concourse. Food stalls near section 114 causing blockage." spellcheck="false" oninput="uc()"></textarea>
+      <div class="if"><span class="ci" id="ci">0 CHARS · 0 WORDS</span><button class="btn" id="ab" onclick="analyze()"><div class="sp"></div><span class="bl">▶ ANALYZE</span></button></div>
+    </div>
+    <div class="pnl">
+      <div class="pb"><span class="pid">SYSTEM CAPABILITIES</span><span class="ptag">3 ANALYSIS MODES</span></div>
+      <div class="mr" style="pointer-events:none;opacity:.4">
+        <div class="mb" style="font-size:9px">CROWD FLOW</div>
+        <div class="mb" style="font-size:9px">WAIT TIMES</div>
+        <div class="mb" style="font-size:9px">COORDINATION</div>
+      </div>
+      <div class="ig">
+        <div class="ir"><span class="in">01</span><div><div class="it">Crowd Flow Analysis</div><div class="id">Detects bottlenecks, assesses risk levels, recommends routing changes for crowd movement optimization.</div></div></div>
+        <div class="ir"><span class="in">02</span><div><div class="it">Wait Time Optimization</div><div class="id">Analyzes queue data, identifies worst areas, generates a step-by-step plan to reduce wait times.</div></div></div>
+        <div class="ir"><span class="in">03</span><div><div class="it">Staff Coordination</div><div class="id">Detects communication gaps, reallocates resources across Security, Ops, Medical, and Transport.</div></div></div>
+        <div class="wb"><div class="wl">⚠ Demo Mode Active</div><div class="wt">Built for Google PromptWars #PromptWarsVirtual. Powered by Gemini 2.0 Flash on Cloud Run.</div></div>
+      </div>
+      <div class="if" style="justify-content:flex-end"><span style="font-size:9px;color:var(--t);opacity:.3;letter-spacing:.1em">BUILT FOR #PROMPTWARSVIRTUAL · @GOOGLEFORDEVELOPERS</span></div>
     </div>
   </div>
 
-  <footer>
-    <div class="fl">© 2026 Faleha Qazi · VIT Bhopal University</div>
-    <div class="fr">
-      <span class="tp">FastAPI</span>
-      <span class="tp">Gemini 2.0</span>
-      <span class="tp">Cloud Run</span>
-      <span class="tp">asia-south1</span>
+  <div class="op" id="op">
+    <div class="ob"><span class="oid">AI ANALYSIS COMPLETE</span><span style="font-size:9px;color:var(--t);opacity:.5;letter-spacing:.1em" id="om">GEMINI 2.0 FLASH</span></div>
+    <div class="oba"><div class="at" id="oc"></div></div>
+  </div>
+  <div class="eb" id="eb"></div>
+
+  <div class="ss">
+    <div class="sl">SAMPLE SCENARIOS — CLICK TO LOAD</div>
+    <div class="sg">
+      <div class="sc" onclick="ls('gate')"><div class="sct">Gate Congestion <span class="stag">CROWD</span></div><div class="scd">Major entry gate backup with 3,000+ fans, pushing near entry points before kickoff.</div></div>
+      <div class="sc" onclick="ls('food')"><div class="sct">Food Court Queue <span class="stag">WAIT</span></div><div class="scd">Halftime surge at concessions creating 25-minute waits, fans missing resumption.</div></div>
+      <div class="sc" onclick="ls('medical')"><div class="sct">Medical + Crowd <span class="stag">COORD</span></div><div class="scd">Medical emergency in high-density zone, blocked access routes, staff comms failure.</div></div>
+      <div class="sc" onclick="ls('exit')"><div class="sct">Post-Event Exit <span class="stag">CROWD</span></div><div class="scd">70,000 fans simultaneous exit, transport hub overwhelmed, dangerous crush risk.</div></div>
     </div>
-  </footer>
+  </div>
+
+  <div class="ft">
+    <div class="fl">VENUEIQ · FALEHA QAZI · VIT BHOPAL · 2026</div>
+    <div class="fr"><span class="fp">GEMINI 2.0</span><span class="fp">FASTAPI</span><span class="fp">CLOUD RUN</span><span class="fp">ASIA-SOUTH1</span></div>
+  </div>
 </div>
 
 <script>
-const S = {
-  cardiac: `Patient: 58M\nCC: Chest pain radiating to left arm x 2 hours\n\nHPI: Mr. Johnson presents with sudden onset substernal chest pressure radiating to left arm and jaw, 8/10 severity, associated with diaphoresis and mild dyspnea. Denies nausea/vomiting. Took 2 aspirin at home with no relief.\n\nPMH: HTN, T2DM, hyperlipidemia\nMeds: Metformin 1000mg BID, Lisinopril 10mg QD, Atorvastatin 40mg QD\nAllergies: PCN (rash)\n\nVitals: BP 162/94, HR 91 reg, RR 18, O2 sat 97% RA, Temp 37.1°C\nExam: Diaphoretic, mild distress. CV: RRR, no murmurs. Lungs: CTA bilaterally.\n\nEKG: ST elevation 2mm in II, III, aVF — inferior STEMI pattern\nLabs pending: Troponin I, BMP, CBC\n\nAssessment/Plan: Inferior STEMI. Activated cath lab. Aspirin 325mg, heparin bolus, nitroglycerin SL given. Cardiology at bedside. Consent obtained for emergent PCI.`,
-  stroke: `Patient: 72F\nCC: Sudden onset L-sided weakness and speech difficulty\n\nHPI: Mrs. Chen brought by family after sudden onset left face droop, left arm weakness, and slurred speech beginning approximately 90 minutes ago. Last known well at 08:30. No headache, no LOC.\n\nPMH: AFib (on warfarin), HTN, prior TIA 2019\nINR: 1.4\n\nVitals: BP 188/102, HR 82 irregular, O2 sat 98% RA\nNIHSS: 12\nCT head: No hemorrhage. CT angio: R MCA proximal occlusion.\n\nAssessment/Plan: Acute ischemic stroke, R MCA territory. IV tPA administered per protocol. Interventional neuro considering thrombectomy. BP management per stroke protocol. ICU admission pending.`,
-  sepsis: `Patient: 45M, ICU day 3\nCC: Persistent fever, hemodynamic instability\n\nCurrent status: Intubated, sedated (propofol + fentanyl drip), ARDS criteria met. On vasopressin 0.04 units/min + norepinephrine 12 mcg/min.\n\nVitals: Tmax 38.9°C, HR 108, BP 94/58 on pressors, SpO2 92% (FiO2 0.7, PEEP 12)\nLabs: WBC 21.4, lactate 3.8, Cr 2.9\nBlood cx: gram-positive cocci in clusters (MRSA suspected)\n\nAssessment/Plan: Septic shock + MRSA bacteremia + ARDS. Continue vancomycin. Adjust vasopressors per MAP >65. AKI stage 2 — monitor for CRRT. ID consulted.`,
-  trauma: `Patient: 29M\nCC: Polytrauma following high-speed MVA\n\nPrimary survey:\nA: Secured (intubated)\nB: Bilateral breath sounds, SpO2 94% on 100% FiO2\nC: Tachycardic, FAST — free fluid Morrison's pouch and pelvis\nD: GCS 13 post-intubation, pupils equal reactive\n\nCT trauma: Splenic laceration Grade III, right pneumothorax (small), L2 transverse process fracture, open femur fracture\n\nVitals post resuscitation: BP 104/72, HR 102, Hgb 8.1\n\nPlan: MTP activated. Chest tube placed R side. OR for ex-lap and splenic repair. Ortho consulted. 4u pRBC, 4u FFP, 1 pool platelets transfused.`
+let mode='crowd',cnt=0;
+const S={
+  gate:{m:'crowd',t:`LOCATION: Gate C — North Entrance\nTIME: T-45min to kickoff\nCROWD COUNT: Approx. 3,200 fans backed up extending 200m onto approach road\nINCIDENTS: 3 reports of pushing near turnstiles. Two people fallen, no injuries yet.\nCAUSE: Only 8 of 14 turnstiles operational (6 down for maintenance). Staff ratio 1:400.\nWEATHER: 38°C heat, no shade. Multiple fans showing signs of heat distress.\nTRANSPORT: 4 buses arrived simultaneously creating pedestrian-vehicle conflict.\nSTATUS: Security supervisor requesting immediate assistance. Medical on standby.`},
+  food:{m:'wait',t:`LOCATION: Concourse B — Main Food Court (Sections 110-118)\nTIME: Halftime (18 minutes)\nCURRENT WAIT TIMES:\n  - Burger Station 1: 28 minutes\n  - Burger Station 2: 24 minutes\n  - Pizza Counter: 19 minutes\n  - Drinks Only: 8 minutes\n  - Premium Lounge Bar: 4 minutes (underutilized)\nSTAFFING: 12 staff across 6 stalls (usual 18 for halftime).\nISSUES: POS system at station 3 crashed 5min ago. Cash only fallback slowing transactions.\nCAPACITY: ~2,100 fans in food court area designed for 800.`},
+  medical:{m:'coord',t:`INCIDENT: Medical emergency, suspected cardiac event — Section 204, Row 12\nTIME: 67th minute of match\nMEDICAL: First responder on scene, requesting AED. Path blocked by standing crowd.\nSECURITY: 2 officers at scene, unable to create clear path.\nOPERATIONS: Control room aware but radio channel congested. 4 unanswered calls.\nTRANSPORT: Medical golf cart cannot access — access ramp blocked by vendor equipment.\nNEARBY STAFF: 3 stewards in Section 200 not yet notified (different radio channel).\nHOSPITAL: Nearest hospital 6 minutes away. Ambulance needs venue access gate opened.`},
+  exit:{m:'crowd',t:`LOCATION: Full venue — Post final whistle (home team won)\nCROWD: 71,500 fans beginning simultaneous exit\nSITUATION:\n  - Gate A (main): 28,000 fans funneling through 6 exits. Dangerous density forming.\n  - Metro station: Already full. 8,000 fans backing up.\n  - Bus stands: 12 buses present, 34 needed. 90 minute estimated wait.\n  - Car park: 3 of 5 exits jammed. 2 cars collision blocking Lane 2.\nINCIDENTS: 2 crushes reported near Gate A. Minor injuries. Ambulance requested.\nWEATHER: Night, Gate B lighting 40% illumination only.`}
 };
 
-function load(t) {
-  document.getElementById('noteInput').value = S[t];
-  updateCount();
-  document.getElementById('noteInput').focus();
+function sm(m,btn){
+  mode=m;
+  document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const tags={crowd:'MODE: CROWD FLOW',wait:'MODE: WAIT TIMES',coord:'MODE: COORDINATION'};
+  document.getElementById('mt').textContent=tags[m];
 }
 
-function updateCount() {
-  const v = document.getElementById('noteInput').value;
-  const w = v.trim() ? v.trim().split(/\s+/).length : 0;
-  document.getElementById('wc').textContent = w + ' words';
-  document.getElementById('tfill').style.width = Math.min((v.length/3000)*100,100) + '%';
+function ls(k){
+  const s=S[k];
+  document.getElementById('ri').value=s.t;
+  const btns=document.querySelectorAll('.mb');
+  const mm={crowd:0,wait:1,coord:2};
+  btns.forEach(b=>b.classList.remove('on'));
+  btns[mm[s.m]].classList.add('on');
+  sm(s.m,btns[mm[s.m]]);
+  uc();
+  document.getElementById('ri').focus();
 }
 
-async function summarize() {
-  const note = document.getElementById('noteInput').value.trim();
-  if (!note) return;
-  const btn = document.getElementById('submitBtn');
-  const out = document.getElementById('outPanel');
-  const err = document.getElementById('errBox');
-  const sc = document.getElementById('sumContent');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  out.classList.remove('show');
-  err.classList.remove('show');
-  try {
-    const res = await fetch('/summarize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({note}) });
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    const data = await res.json();
-    sc.textContent = '';
-    out.classList.add('show');
-    const text = data.summary;
-    let i = 0;
-    const cur = document.createElement('span');
-    cur.className = 'cursor';
-    sc.appendChild(cur);
-    const ti = setInterval(() => {
-      if (i < text.length) { sc.insertBefore(document.createTextNode(text[i]), cur); i++; }
-      else { clearInterval(ti); cur.remove(); }
-    }, 8);
-  } catch(e) {
-    err.textContent = 'Error: ' + e.message;
-    err.classList.add('show');
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-  }
+function uc(){
+  const v=document.getElementById('ri').value;
+  const w=v.trim()?v.trim().split(/\s+/).length:0;
+  document.getElementById('ci').textContent=`${v.length} CHARS · ${w} WORDS`;
 }
 
-document.getElementById('noteInput').addEventListener('keydown', e => {
-  if (e.ctrlKey && e.key === 'Enter') summarize();
-});
+async function analyze(){
+  const report=document.getElementById('ri').value.trim();
+  if(!report)return;
+  const btn=document.getElementById('ab');
+  const out=document.getElementById('op');
+  const err=document.getElementById('eb');
+  const oc=document.getElementById('oc');
+  btn.disabled=true;btn.classList.add('ld');
+  out.classList.remove('show');err.classList.remove('show');
+  try{
+    const res=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report,mode})});
+    if(!res.ok)throw new Error('SERVER ERROR '+res.status);
+    const data=await res.json();
+    oc.textContent='';out.classList.add('show');
+    document.getElementById('om').textContent=`GEMINI 2.0 FLASH · MODE: ${mode.toUpperCase()}`;
+    cnt++;document.getElementById('ac').textContent=cnt;
+    const text=data.analysis;
+    let i=0;
+    const cur=document.createElement('span');cur.className='cur';oc.appendChild(cur);
+    const ti=setInterval(()=>{
+      if(i<text.length){oc.insertBefore(document.createTextNode(text[i]),cur);i++;}
+      else{clearInterval(ti);cur.remove();}
+    },6);
+  }catch(e){
+    err.textContent='// ERROR: '+e.message;err.classList.add('show');
+  }finally{btn.disabled=false;btn.classList.remove('ld');}
+}
+
+document.getElementById('ri').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter')analyze();});
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+}
+setInterval(tick,1000);tick();
 </script>
 </body>
 </html>
