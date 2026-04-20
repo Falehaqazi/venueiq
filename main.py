@@ -1,23 +1,62 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 import os
+import logging
 
-app = FastAPI()
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="VenueIQ", description="AI Event Intelligence System", version="2.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+
+api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("GOOGLE_API_KEY environment variable not set")
+
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-HTML = open("index.html").read()
+VALID_MODES = {"crowd", "wait", "coord"}
+MAX_REPORT_LENGTH = 5000
+MIN_REPORT_LENGTH = 10
+
+with open("index.html") as f:
+    HTML = f.read()
 
 @app.get("/", response_class=HTMLResponse)
 def home():
     return HTML
 
+@app.get("/health")
+def health():
+    return {"status": "healthy", "service": "VenueIQ", "version": "2.0.0"}
+
 @app.post("/analyze")
 async def analyze(request: Request):
-    body = await request.json()
-    report = body.get("report", "")
-    mode = body.get("mode", "crowd")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    report = body.get("report", "").strip()
+    mode = body.get("mode", "crowd").strip().lower()
+
+    if not report:
+        raise HTTPException(status_code=400, detail="Report field is required")
+    if len(report) < MIN_REPORT_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Report too short (min {MIN_REPORT_LENGTH} chars)")
+    if len(report) > MAX_REPORT_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Report too long (max {MAX_REPORT_LENGTH} chars)")
+    if mode not in VALID_MODES:
+        raise HTTPException(status_code=400, detail=f"Invalid mode. Must be one of: {VALID_MODES}")
 
     prompts = {
         "crowd": f"""You are an AI crowd intelligence system for large-scale sporting venues. Analyze the following crowd report and provide:
@@ -49,6 +88,10 @@ Report:
 {report}"""
     }
 
-    prompt = prompts.get(mode, prompts["crowd"])
-    response = model.generate_content(prompt)
-    return {"analysis": response.text}
+    try:
+        response = model.generate_content(prompts[mode])
+        logger.info(f"Analysis completed: mode={mode}, report_length={len(report)}")
+        return {"analysis": response.text, "mode": mode, "status": "success"}
+    except Exception as e:
+        logger.error(f"Gemini API error: {e}")
+        raise HTTPException(status_code=500, detail="AI analysis failed. Please try again.")
