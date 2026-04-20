@@ -3,439 +3,252 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClinSumm — Clinical Note Summarizer</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>ClinSumm — AI Clinical Note Summarizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #080c10;
-    --surface: #0d1117;
-    --border: #1e2d3d;
-    --teal: #00e5cc;
-    --teal-dim: rgba(0,229,204,0.08);
-    --teal-glow: rgba(0,229,204,0.15);
-    --text: #c9d5e0;
-    --text-dim: #4a5a6a;
-    --white: #f0f4f8;
-    --red: #ff4d6d;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Glow orb */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(0,229,204,0.06) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 60px 24px 80px;
-  }
-
-  /* Header */
-  header {
-    text-align: center;
-    margin-bottom: 56px;
-    animation: fadeDown 0.6s ease both;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--teal-dim);
-    border: 1px solid rgba(0,229,204,0.2);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 24px;
-  }
-
-  .badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--teal);
-    animation: pulse 2s infinite;
-  }
-
-  h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(36px, 5vw, 56px);
-    color: var(--white);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
-
-  h1 em {
-    font-style: italic;
-    color: var(--teal);
-  }
-
-  .subtitle {
-    font-size: 13px;
-    color: var(--text-dim);
-    letter-spacing: 0.04em;
-    line-height: 1.6;
-  }
-
-  /* Main card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    animation: fadeUp 0.7s ease 0.1s both;
-  }
-
-  .card-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255,255,255,0.01);
-  }
-
-  .card-label {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .dots {
-    display: flex;
-    gap: 6px;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-  .dot:nth-child(1) { background: #ff5f57; }
-  .dot:nth-child(2) { background: #febc2e; }
-  .dot:nth-child(3) { background: #28c840; }
-
-  textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    padding: 24px;
-    resize: none;
-    min-height: 220px;
-    display: block;
-  }
-
-  textarea::placeholder {
-    color: var(--text-dim);
-  }
-
-  .card-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .char-count {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  button {
-    background: var(--teal);
-    color: #000;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 28px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  button:hover {
-    background: #00fff5;
-    box-shadow: 0 0 20px rgba(0,229,204,0.3);
-    transform: translateY(-1px);
-  }
-
-  button:active { transform: translateY(0); }
-
-  button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .spinner {
-    width: 12px;
-    height: 12px;
-    border: 2px solid rgba(0,0,0,0.3);
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: none;
-  }
-
-  button.loading .spinner { display: block; }
-  button.loading .btn-text { display: none; }
-
-  /* Output */
-  .output {
-    margin-top: 24px;
-    animation: fadeUp 0.5s ease both;
-    display: none;
-  }
-
-  .output.visible { display: block; }
-
-  .output-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .output-label {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--teal);
-  }
-
-  .output-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(0,229,204,0.3), transparent);
-  }
-
-  .output-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--teal);
-    border-radius: 8px;
-    padding: 28px;
-  }
-
-  .section {
-    margin-bottom: 20px;
-  }
-
-  .section:last-child { margin-bottom: 0; }
-
-  .section-title {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 8px;
-    opacity: 0.7;
-  }
-
-  .section-content {
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--text);
-  }
-
-  .raw-summary {
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--text);
-    white-space: pre-wrap;
-  }
-
-  /* Error */
-  .error {
-    background: rgba(255,77,109,0.08);
-    border: 1px solid rgba(255,77,109,0.2);
-    border-radius: 8px;
-    padding: 16px 20px;
-    font-size: 12px;
-    color: var(--red);
-    margin-top: 16px;
-    display: none;
-  }
-
-  .error.visible { display: block; }
-
-  /* Footer */
-  footer {
-    text-align: center;
-    margin-top: 64px;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    animation: fadeUp 0.7s ease 0.3s both;
-  }
-
-  footer span { color: var(--teal); opacity: 0.6; }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+:root {
+  --bg: #05080f;
+  --bg2: #0a0f1a;
+  --bg3: #0f1525;
+  --border: rgba(56, 189, 248, 0.1);
+  --border2: rgba(56, 189, 248, 0.2);
+  --cyan: #38bdf8;
+  --cyan-glow: rgba(56, 189, 248, 0.12);
+  --green: #34d399;
+  --green-glow: rgba(52, 211, 153, 0.12);
+  --text: #94a3b8;
+  --text2: #cbd5e1;
+  --white: #f1f5f9;
+  --red: #f87171;
+  --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+.grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px); background-size: 48px 48px; animation: gridShift 20s linear infinite; pointer-events: none; z-index: 0; }
+@keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 48px 48px; } }
+.glow1 { position: fixed; width: 500px; height: 500px; top: -150px; left: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 70%); pointer-events: none; z-index: 0; border-radius: 50%; }
+.glow2 { position: fixed; width: 300px; height: 300px; bottom: 10%; right: 5%; background: radial-gradient(circle, rgba(52,211,153,0.04) 0%, transparent 70%); pointer-events: none; z-index: 0; border-radius: 50%; }
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+header { margin-bottom: 48px; animation: slideDown 0.5s ease both; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--cyan-glow); }
+.cross { position: relative; width: 14px; height: 14px; }
+.cross::before, .cross::after { content: ''; position: absolute; background: var(--cyan); border-radius: 1px; }
+.cross::before { width: 14px; height: 3px; top: 50%; left: 0; transform: translateY(-50%); }
+.cross::after { width: 3px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
+.logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
+.logo-name span { color: var(--cyan); }
+.status-pill { display: flex; align-items: center; gap: 6px; background: var(--green-glow); border: 1px solid rgba(52,211,153,0.2); border-radius: 20px; padding: 5px 12px; font-size: 11px; color: var(--green); letter-spacing: 0.08em; }
+.sdot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hero { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; }
+h1 { font-family: 'Syne', sans-serif; font-size: clamp(40px, 6vw, 64px); font-weight: 800; color: var(--white); line-height: 1.0; letter-spacing: -0.03em; margin-bottom: 12px; }
+.ac { color: var(--cyan); }
+.dm { color: var(--text); font-weight: 400; }
+.hero p { font-size: 12px; color: var(--text); line-height: 1.6; max-width: 440px; }
+.stats { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; text-align: right; }
+.sn { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--cyan); display: block; }
+.sl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); }
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; animation: slideUp 0.5s ease 0.1s both; }
+.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.2s; }
+.panel:focus-within { border-color: var(--border2); }
+.ph { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); }
+.pt { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.pt::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--border2); }
+.pt.on::before { background: var(--cyan); }
+.wc { font-size: 10px; color: var(--text); opacity: 0.5; }
+textarea { width: 100%; background: transparent; border: none; outline: none; color: var(--text2); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.75; padding: 18px; resize: none; height: 280px; display: block; }
+textarea::placeholder { color: rgba(148,163,184,0.3); }
+.pf { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.shortcut { font-size: 10px; color: var(--text); opacity: 0.4; }
+.shortcut kbd { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: inherit; font-size: 9px; }
+.btn { background: var(--cyan); color: #000; border: none; border-radius: 7px; padding: 9px 20px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(56,189,248,0.25); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+.spinner { width: 12px; height: 12px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin 0.5s linear infinite; display: none; }
+.btn.loading .spinner { display: block; }
+.btn.loading .bl, .btn.loading .ba { display: none; }
+.out-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; grid-column: 1 / -1; display: none; animation: slideUp 0.4s ease both; }
+.out-panel.show { display: block; }
+.out-body { padding: 20px; }
+.raw { font-size: 12px; line-height: 1.8; color: var(--text2); white-space: pre-wrap; }
+.cursor { display: inline-block; width: 2px; height: 14px; background: var(--cyan); margin-left: 2px; vertical-align: middle; animation: blink 0.8s infinite; }
+.err { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15); border-radius: 8px; padding: 14px 16px; font-size: 12px; color: var(--red); margin-top: 12px; display: none; }
+.err.show { display: block; }
+.samples { margin-top: 16px; animation: slideUp 0.5s ease 0.2s both; }
+.sh { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 8px; }
+.sbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.sbtn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text); cursor: pointer; transition: all 0.15s; }
+.sbtn:hover { border-color: var(--border2); color: var(--cyan); }
+footer { margin-top: 48px; display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--border); animation: slideUp 0.5s ease 0.3s both; }
+.fl { font-size: 10px; color: var(--text); opacity: 0.4; }
+.fr { display: flex; gap: 16px; }
+.tp { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); opacity: 0.3; }
+.tbar { height: 2px; background: var(--border); margin: 0 16px; }
+.tfill { height: 100%; background: var(--cyan); border-radius: 1px; transition: width 0.3s; width: 0%; }
+.step { display: flex; gap: 12px; align-items: flex-start; }
+.stepn { width: 24px; height: 24px; border-radius: 6px; background: var(--cyan-glow); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--cyan); font-family: 'Syne', sans-serif; font-weight: 700; flex-shrink: 0; }
+.stept { font-size: 12px; color: var(--text2); margin-bottom: 4px; font-family: 'Syne', sans-serif; font-weight: 600; }
+.steps { font-size: 11px; color: var(--text); line-height: 1.6; }
+.disc { margin-top: 8px; padding: 12px; background: var(--bg3); border-radius: 8px; border: 1px solid var(--border); }
+.discl { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; opacity: 0.8; }
+.disct { font-size: 10px; color: var(--text); line-height: 1.6; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 700px) { .main-grid { grid-template-columns: 1fr; } .hero { grid-template-columns: 1fr; } .stats { display: none; } }
 </style>
 </head>
 <body>
+<div class="grid-bg"></div>
+<div class="glow1"></div>
+<div class="glow2"></div>
 <div class="container">
   <header>
-    <div class="badge">Powered by Gemini 2.0 Flash</div>
-    <h1>Clinical Note<br><em>Summarizer</em></h1>
-    <p class="subtitle">Paste any clinical note · Get a structured AI summary in seconds</p>
+    <div class="top-bar">
+      <div class="logo">
+        <div class="logo-icon"><div class="cross"></div></div>
+        <span class="logo-name">Clin<span>Summ</span></span>
+      </div>
+      <div class="status-pill"><div class="sdot"></div>GEMINI 2.0 FLASH · LIVE</div>
+    </div>
+    <div class="hero">
+      <div>
+        <h1>Clinical notes,<br><span class="ac">summarized</span><br><span class="dm">instantly.</span></h1>
+        <p>Paste any clinical note and get a structured AI summary — chief complaint, findings, assessment &amp; plan — in seconds.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="sn">2.0</span><span class="sl">Gemini Flash</span></div>
+        <div class="stat"><span class="sn">&lt;3s</span><span class="sl">Avg response</span></div>
+        <div class="stat"><span class="sn">∞</span><span class="sl">Note types</span></div>
+      </div>
+    </div>
   </header>
 
-  <div class="card">
-    <div class="card-header">
-      <span class="card-label">Clinical Note Input</span>
-      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="main-grid">
+    <div class="panel">
+      <div class="ph">
+        <span class="pt on">Clinical note input</span>
+        <span class="wc" id="wc">0 words</span>
+      </div>
+      <textarea id="noteInput" placeholder="Paste your clinical note here...&#10;&#10;Supports: ER triage, SOAP notes, discharge summaries, progress notes, operative reports..." spellcheck="false" oninput="updateCount()"></textarea>
+      <div class="tbar"><div class="tfill" id="tfill"></div></div>
+      <div class="pf">
+        <span class="shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run</span>
+        <button class="btn" id="submitBtn" onclick="summarize()">
+          <div class="spinner"></div>
+          <span class="bl">Summarize</span>
+          <span class="ba">→</span>
+        </button>
+      </div>
     </div>
-    <textarea id="noteInput" placeholder="Paste your clinical note here...
 
-Example:
-Patient is a 58-year-old male presenting with chest pain radiating to the left arm for 2 hours. BP 160/95, HR 88, O2 sat 97%. ECG shows ST elevation in leads II, III, aVF. Troponin pending. History of hypertension and type 2 diabetes. Currently on metformin and lisinopril..." spellcheck="false"></textarea>
-    <div class="card-footer">
-      <span class="char-count" id="charCount">0 characters</span>
-      <button id="submitBtn" onclick="summarize()">
-        <div class="spinner"></div>
-        <span class="btn-text">→ Summarize</span>
-      </button>
+    <div class="panel">
+      <div class="ph"><span class="pt">How it works</span></div>
+      <div style="padding:18px;height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+        <div class="step"><div class="stepn">01</div><div><div class="stept">Paste your note</div><div class="steps">Any format — ER triage, SOAP, discharge summary, progress note, op report.</div></div></div>
+        <div class="step"><div class="stepn">02</div><div><div class="stept">Gemini 2.0 Flash</div><div class="steps">Note sent to Gemini with a structured clinical extraction prompt.</div></div></div>
+        <div class="step"><div class="stepn">03</div><div><div class="stept">Structured output</div><div class="steps">Chief complaint, key findings, assessment, and plan — clearly separated.</div></div></div>
+        <div class="disc"><div class="discl">Disclaimer</div><div class="disct">For demonstration only. Not a substitute for clinical judgment. Do not use with real patient data.</div></div>
+      </div>
+      <div class="tbar"></div>
+      <div class="pf" style="justify-content:flex-end;"><span style="font-size:10px;color:var(--text);opacity:0.4;">Built for #PromptWars · Google for Developers</span></div>
+    </div>
+
+    <div class="out-panel" id="outPanel">
+      <div class="ph">
+        <span class="pt on">AI summary output</span>
+        <span style="font-size:10px;color:var(--green);display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;"></span>COMPLETE</span>
+      </div>
+      <div class="out-body"><div class="raw" id="sumContent"></div></div>
     </div>
   </div>
 
-  <div class="error" id="errorBox"></div>
+  <div class="err" id="errBox"></div>
 
-  <div class="output" id="outputBox">
-    <div class="output-header">
-      <span class="output-label">AI Summary</span>
-      <div class="output-line"></div>
-    </div>
-    <div class="output-card">
-      <div class="raw-summary" id="summaryContent"></div>
+  <div class="samples">
+    <div class="sh">Try a sample note</div>
+    <div class="sbtns">
+      <button class="sbtn" onclick="load('cardiac')">Cardiac · Chest pain</button>
+      <button class="sbtn" onclick="load('stroke')">Neurology · Stroke</button>
+      <button class="sbtn" onclick="load('sepsis')">ICU · Sepsis</button>
+      <button class="sbtn" onclick="load('trauma')">Trauma · MVA</button>
     </div>
   </div>
 
   <footer>
-    Built for <span>Google PromptWars</span> · Gemini 2.0 Flash · Cloud Run · by Faleha Qazi
+    <div class="fl">© 2026 Faleha Qazi · VIT Bhopal University</div>
+    <div class="fr">
+      <span class="tp">FastAPI</span>
+      <span class="tp">Gemini 2.0</span>
+      <span class="tp">Cloud Run</span>
+      <span class="tp">asia-south1</span>
+    </div>
   </footer>
 </div>
 
 <script>
-  const textarea = document.getElementById('noteInput');
-  const charCount = document.getElementById('charCount');
+const S = {
+  cardiac: `Patient: 58M\nCC: Chest pain radiating to left arm x 2 hours\n\nHPI: Mr. Johnson presents with sudden onset substernal chest pressure radiating to left arm and jaw, 8/10 severity, associated with diaphoresis and mild dyspnea. Denies nausea/vomiting. Took 2 aspirin at home with no relief.\n\nPMH: HTN, T2DM, hyperlipidemia\nMeds: Metformin 1000mg BID, Lisinopril 10mg QD, Atorvastatin 40mg QD\nAllergies: PCN (rash)\n\nVitals: BP 162/94, HR 91 reg, RR 18, O2 sat 97% RA, Temp 37.1°C\nExam: Diaphoretic, mild distress. CV: RRR, no murmurs. Lungs: CTA bilaterally.\n\nEKG: ST elevation 2mm in II, III, aVF — inferior STEMI pattern\nLabs pending: Troponin I, BMP, CBC\n\nAssessment/Plan: Inferior STEMI. Activated cath lab. Aspirin 325mg, heparin bolus, nitroglycerin SL given. Cardiology at bedside. Consent obtained for emergent PCI.`,
+  stroke: `Patient: 72F\nCC: Sudden onset L-sided weakness and speech difficulty\n\nHPI: Mrs. Chen brought by family after sudden onset left face droop, left arm weakness, and slurred speech beginning approximately 90 minutes ago. Last known well at 08:30. No headache, no LOC.\n\nPMH: AFib (on warfarin), HTN, prior TIA 2019\nINR: 1.4\n\nVitals: BP 188/102, HR 82 irregular, O2 sat 98% RA\nNIHSS: 12\nCT head: No hemorrhage. CT angio: R MCA proximal occlusion.\n\nAssessment/Plan: Acute ischemic stroke, R MCA territory. IV tPA administered per protocol. Interventional neuro considering thrombectomy. BP management per stroke protocol. ICU admission pending.`,
+  sepsis: `Patient: 45M, ICU day 3\nCC: Persistent fever, hemodynamic instability\n\nCurrent status: Intubated, sedated (propofol + fentanyl drip), ARDS criteria met. On vasopressin 0.04 units/min + norepinephrine 12 mcg/min.\n\nVitals: Tmax 38.9°C, HR 108, BP 94/58 on pressors, SpO2 92% (FiO2 0.7, PEEP 12)\nLabs: WBC 21.4, lactate 3.8, Cr 2.9\nBlood cx: gram-positive cocci in clusters (MRSA suspected)\n\nAssessment/Plan: Septic shock + MRSA bacteremia + ARDS. Continue vancomycin. Adjust vasopressors per MAP >65. AKI stage 2 — monitor for CRRT. ID consulted.`,
+  trauma: `Patient: 29M\nCC: Polytrauma following high-speed MVA\n\nPrimary survey:\nA: Secured (intubated)\nB: Bilateral breath sounds, SpO2 94% on 100% FiO2\nC: Tachycardic, FAST — free fluid Morrison's pouch and pelvis\nD: GCS 13 post-intubation, pupils equal reactive\n\nCT trauma: Splenic laceration Grade III, right pneumothorax (small), L2 transverse process fracture, open femur fracture\n\nVitals post resuscitation: BP 104/72, HR 102, Hgb 8.1\n\nPlan: MTP activated. Chest tube placed R side. OR for ex-lap and splenic repair. Ortho consulted. 4u pRBC, 4u FFP, 1 pool platelets transfused.`
+};
 
-  textarea.addEventListener('input', () => {
-    const n = textarea.value.length;
-    charCount.textContent = n + ' character' + (n !== 1 ? 's' : '');
-  });
+function load(t) {
+  document.getElementById('noteInput').value = S[t];
+  updateCount();
+  document.getElementById('noteInput').focus();
+}
 
-  async function summarize() {
-    const note = textarea.value.trim();
-    if (!note) return;
+function updateCount() {
+  const v = document.getElementById('noteInput').value;
+  const w = v.trim() ? v.trim().split(/\s+/).length : 0;
+  document.getElementById('wc').textContent = w + ' words';
+  document.getElementById('tfill').style.width = Math.min((v.length/3000)*100,100) + '%';
+}
 
-    const btn = document.getElementById('submitBtn');
-    const output = document.getElementById('outputBox');
-    const errorBox = document.getElementById('errorBox');
-    const summaryContent = document.getElementById('summaryContent');
-
-    btn.disabled = true;
-    btn.classList.add('loading');
-    output.classList.remove('visible');
-    errorBox.classList.remove('visible');
-
-    try {
-      const res = await fetch('/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note })
-      });
-
-      if (!res.ok) throw new Error('Server error: ' + res.status);
-      const data = await res.json();
-      summaryContent.textContent = data.summary;
-      output.classList.add('visible');
-    } catch (err) {
-      errorBox.textContent = 'Error: ' + err.message + '. Please try again.';
-      errorBox.classList.add('visible');
-    } finally {
-      btn.disabled = false;
-      btn.classList.remove('loading');
-    }
+async function summarize() {
+  const note = document.getElementById('noteInput').value.trim();
+  if (!note) return;
+  const btn = document.getElementById('submitBtn');
+  const out = document.getElementById('outPanel');
+  const err = document.getElementById('errBox');
+  const sc = document.getElementById('sumContent');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  out.classList.remove('show');
+  err.classList.remove('show');
+  try {
+    const res = await fetch('/summarize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({note}) });
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    const data = await res.json();
+    sc.textContent = '';
+    out.classList.add('show');
+    const text = data.summary;
+    let i = 0;
+    const cur = document.createElement('span');
+    cur.className = 'cursor';
+    sc.appendChild(cur);
+    const ti = setInterval(() => {
+      if (i < text.length) { sc.insertBefore(document.createTextNode(text[i]), cur); i++; }
+      else { clearInterval(ti); cur.remove(); }
+    }, 8);
+  } catch(e) {
+    err.textContent = 'Error: ' + e.message;
+    err.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
   }
+}
 
-  // Enter key support
-  textarea.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === 'Enter') summarize();
-  });
+document.getElementById('noteInput').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') summarize();
+});
 </script>
 </body>
 </html>
